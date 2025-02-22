@@ -31,6 +31,10 @@ async def get_transactions():
     return transactions
 
 @app.post("/transactions/{account_id}")
-async def create_transaction(account_id: int):
+async def create_transaction(account_id: int, transaction: dict):
     print("account_id", account_id)
-    return {"message": f"Transaction created for account {account_id}"}
+    print("amount", transaction.get("amount"))
+    return {
+        "message": f"Transaction created for account {account_id}",
+        "amount": transaction.get("amount")
+    }
