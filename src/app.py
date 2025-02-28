@@ -1,22 +1,24 @@
 from fastapi import FastAPI, Response
 import json
+from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/docs",
+    title="Family Bank 2",
+    version="0.1.0",
+)
+
 SAVE_FILE: str = "db.json"
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World!"}
+class Parent(BaseModel):
+    name: str
 
 @app.get("/parents") # <-- these are called endpoint handlers
-async def get_parents():
-    response = {
-        "data": [
-            {"name": "Harry"},
-            {"name": "Jessica"},
-        ],
-    }
-    return response
+async def get_parents() -> list[Parent]:
+    return [
+        Parent(name="Harry"),
+        Parent(name="Jessica"),
+    ]
 
 @app.get("/accounts")
 async def get_accounts():
