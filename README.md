@@ -27,6 +27,15 @@ curl -X POST -H "Content-Type: application/json" -d '{"amount": 10}' http://loca
 ```
 
 ```bash
+# 
+curl -X POST http://localhost:8000/save
+```
+
+```bash
+curl -X GET -v http://localhost:8000/parents
+```
+
+```bash
 # using python
 poetry run python scripts/test_client.py
 ```

@@ -10,11 +10,13 @@ async def root():
 
 @app.get("/parents") # <-- these are called endpoint handlers
 async def get_parents():
-    parents = {
-        1: {"name": "Harry"},
-        2: {"name": "Jessica"},
+    response = {
+        "data": [
+            {"name": "Harry"},
+            {"name": "Jessica"},
+        ],
     }
-    return parents
+    return response
 
 @app.get("/accounts")
 async def get_accounts():
@@ -44,7 +46,7 @@ async def create_transaction(account_id: int, transaction: dict):
 @app.post("/save")
 async def save():
     with open("db.json", "w") as f:
-        json.dump({}, f, indent=2)
+        json.dump({"hi": "there"}, f, indent=2)
     return Response(status_code=200)
 
 
