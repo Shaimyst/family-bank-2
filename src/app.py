@@ -10,8 +10,13 @@ app = FastAPI(
 
 SAVE_FILE: str = "db.json"
 
+# TODO: add id to parent
 class Parent(BaseModel):
     name: str
+
+# TODO: add id to child account
+class ChildAccount(BaseModel):
+    owner: str
 
 @app.get("/parents") # <-- these are called endpoint handlers
 async def get_parents() -> list[Parent]:
@@ -19,14 +24,12 @@ async def get_parents() -> list[Parent]:
         Parent(name="Harry"),
         Parent(name="Jessica"),
     ]
-
-@app.get("/accounts")
-async def get_accounts():
-    accounts = {
-        1: {"name": "Willow", "account_id": 1},
-        2: {"name": "Penny", "account_id": 2},
-    }
-    return accounts
+@app.get("/child-accounts")
+async def get_child_accounts() -> list[ChildAccount]:
+    return [
+        ChildAccount(owner="Willow"),
+        ChildAccount(owner="Penny"),
+    ]
 
 @app.get("/transactions")
 async def get_transactions():
@@ -36,6 +39,8 @@ async def get_transactions():
     }
     return transactions
 
+# TODO: add id to transaction
+# TODO: add get along with the post when creating a transaction?
 @app.post("/transactions/{account_id}")
 async def create_transaction(account_id: int, transaction: dict):
     print("account_id", account_id)
