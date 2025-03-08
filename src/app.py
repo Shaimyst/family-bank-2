@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Response
 import json
-from pydantic import BaseModel
+from models import Transaction, Parent, ChildAccount
 
 app = FastAPI(
     docs_url="/docs",
@@ -10,44 +10,36 @@ app = FastAPI(
 
 SAVE_FILE: str = "db.json"
 
-# TODO: add id to parent
-class Parent(BaseModel):
-    name: str
-
-# TODO: add id to child account
-class ChildAccount(BaseModel):
-    owner: str
-
-@app.get("/parents") # <-- these are called endpoint handlers
+@app.get("/parents")
 async def get_parents() -> list[Parent]:
     return [
         Parent(name="Harry"),
         Parent(name="Jessica"),
     ]
+
 @app.get("/child-accounts")
 async def get_child_accounts() -> list[ChildAccount]:
     return [
-        ChildAccount(owner="Willow"),
-        ChildAccount(owner="Penny"),
+        ChildAccount(owner="Willow", account_id=1),
+        ChildAccount(owner="Penny", account_id=2),
     ]
 
 @app.get("/transactions")
 async def get_transactions():
-    transactions = {
-        1: {"amount": 100, "date": "2024-01-01", "account_id": 1},
-        2: {"amount": 200, "date": "2024-01-02", "account_id": 2},
-    }
+    try:
+        with open("db.json", "r") as f:
+            transactions = json.load(f)
+    except FileNotFoundError:
+        transactions = []
     return transactions
 
-# TODO: add id to transaction
-# TODO: add get along with the post when creating a transaction?
 @app.post("/transactions/{account_id}")
-async def create_transaction(account_id: int, transaction: dict):
+async def create_transaction(account_id: int, transaction: Transaction):
     print("account_id", account_id)
-    print("amount", transaction.get("amount"))
+    print("amount", transaction.amount)
     return {
         "message": f"Transaction created for account {account_id}",
-        "amount": transaction.get("amount")
+        "amount": transaction.amount
     }
 
 @app.post("/save")

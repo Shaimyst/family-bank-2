@@ -14,6 +14,18 @@ poetry run uvicorn src.app:app --reload --log-level debug
 - [x] Add a new endpoint for getting accounts
 - [x] Add a new endpoint for getting parents
 
+## Todos
+
+- [x] Move models to models.py
+- [ ] Add a new endpoint for getting all transactions
+- [ ] Look at json in the other project to see how to store transactions
+- [ ]   Read all transactions from db file
+- [ ] Add a new endpoint for creation of a transaction
+- [ ]   Store transactions to db file
+- [ ]   do input validation
+- [ ]   add error handling
+- [ ] Create a transaction model
+
 ## Testing the app
 
 ```bash
