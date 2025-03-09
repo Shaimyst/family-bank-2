@@ -25,13 +25,14 @@ async def get_child_accounts() -> list[ChildAccount]:
     ]
 
 @app.get("/transactions")
-async def get_transactions():
+async def get_transactions() -> list[Transaction]:
     try:
-        with open("db.json", "r") as f:
-            transactions = json.load(f)
+        with open(SAVE_FILE, "r") as f:
+            database: dict = json.load(f)
+            transactions: list[dict] = database["transactions"]
+            return transactions
     except FileNotFoundError:
-        transactions = []
-    return transactions
+        return []
 
 @app.post("/transactions/{account_id}")
 async def create_transaction(account_id: int, transaction: Transaction):
@@ -41,13 +42,6 @@ async def create_transaction(account_id: int, transaction: Transaction):
         "message": f"Transaction created for account {account_id}",
         "amount": transaction.amount
     }
-
-@app.post("/save")
-async def save():
-    with open("db.json", "w") as f:
-        json.dump({"hi": "there"}, f, indent=2)
-    return Response(status_code=200)
-
 
     # # Save transactions to save file
     # with open("db.json", "w") as f:
