@@ -17,9 +17,9 @@ poetry run uvicorn src.app:app --reload --log-level debug
 ## Todos
 
 - [x] Move models to models.py
-- [ ] Add a new endpoint for getting all transactions
-- [ ] Look at json in the other project to see how to store transactions
-- [ ]   Read all transactions from db file
+- [x] Add a new endpoint for getting all transactions
+- [x] Look at json in the other project to see how to store transactions
+- [x]   Read all transactions from db file
 - [ ] Add a new endpoint for creation of a transaction
 - [ ]   Store transactions to db file
 - [ ]   do input validation
