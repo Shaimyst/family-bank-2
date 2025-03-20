@@ -13,15 +13,15 @@ SAVE_FILE: str = "db.json"
 @app.get("/parents")
 async def get_parents() -> list[Parent]:
     return [
-        Parent(name="Harry"),
-        Parent(name="Jessica"),
+        Parent(id=1, name="Harry"),
+        Parent(id=2, name="Jessica"),
     ]
 
 @app.get("/child-accounts")
 async def get_child_accounts() -> list[ChildAccount]:
     return [
-        ChildAccount(owner="Willow", account_id=1),
-        ChildAccount(owner="Penny", account_id=2),
+        ChildAccount(owner="Willow", id=1),
+        ChildAccount(owner="Penny", id=2),
     ]
 
 @app.get("/transactions")
@@ -44,21 +44,18 @@ async def create_transaction(transaction: Transaction):
     except FileNotFoundError:
         all_transactions = []
     
-    transaction_dict = transaction.model_dump()
-    
-    # Get child accounts to look up by name
+    # Get child accounts to verify the account id
     child_accounts = await get_child_accounts()
-    account = next((acc for acc in child_accounts if acc.owner.lower() == transaction.child_name.lower()), None)
+    account = next((acc for acc in child_accounts if acc.id == transaction.child_account_id), None)
     
-    if not account:
-        return {"error": f"Child '{transaction.child_name}' not found. Available children: {', '.join(acc.owner for acc in child_accounts)}"}
+    if not account and transaction.child_account_id is not None:
+        return {"error": f"Child account with ID {transaction.child_account_id} not found. Available accounts: {', '.join(f'{acc.owner} (ID: {acc.id})' for acc in child_accounts)}"}
     
     # Create consistent transaction record
     transaction_dict = {
-        "amount": transaction.amount,
-        "child_name": transaction.child_name,
-        "account_id": account.account_id,
         "id": len(all_transactions) + 1,
+        "amount": transaction.amount,
+        "child_account_id": transaction.child_account_id,
         "description": transaction.description
     }
     
@@ -67,8 +64,11 @@ async def create_transaction(transaction: Transaction):
     with open(SAVE_FILE, "w") as f:
         json.dump({"transactions": all_transactions}, f, indent=2)
     
+    account_info = f"(Account #{transaction.child_account_id})" if transaction.child_account_id else "(No account specified)"
+    owner_name = account.owner if account else "System"
+    
     return {
-        "message": f"Transaction created for {transaction.child_name} (Account #{account.account_id})",
+        "message": f"Transaction created for {owner_name} {account_info}",
         "amount": transaction.amount,
         "transaction_id": transaction_dict["id"]
     }

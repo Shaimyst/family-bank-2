@@ -20,8 +20,9 @@ poetry run uvicorn src.app:app --reload --log-level debug
 - [x] Add a new endpoint for getting all transactions
 - [x] Look at json in the other project to see how to store transactions
 - [x]   Read all transactions from db file
-- [ ] Add a new endpoint for creation of a transaction
-- [ ]   Store transactions to db file
+- [x] Fix get transactions endpoint
+- [x] Add a new endpoint for creation of a transaction
+- [x]   Store transactions to db file
 - [ ]   do input validation
 - [ ]   add error handling
 - [ ] Create a transaction model
