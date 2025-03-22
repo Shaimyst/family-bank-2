@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List
+
 class Parent(BaseModel):
     id: int
     name: str
@@ -7,13 +8,13 @@ class Parent(BaseModel):
 class Transaction(BaseModel):
     id: int
     amount: float
-    child_account_id: int = None
-    description: Optional[str] = None
+    child_account_id: int
+    description: str
 
 class TransactionCreate(BaseModel):
     amount: float
-    child_account_id: Optional[int] = None
-    description: Optional[str] = None
+    child_account_id: int
+    description: str
 
 class ChildAccount(BaseModel):
     id: int

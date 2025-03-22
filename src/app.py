@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import json
-from models import Transaction, Parent, ChildAccount
+from models import Transaction, Parent, ChildAccount, TransactionCreate
 
 app = FastAPI(
     docs_url="/docs",
@@ -35,28 +35,19 @@ async def get_transactions() -> list[Transaction]:
         return []
 
 @app.post("/transactions")
-async def create_transaction(transaction: Transaction):
-    # Load existing transactions or create empty list
+async def create_transaction(transaction_create: TransactionCreate) -> Transaction:
     try:
         with open(SAVE_FILE, "r") as f:
             database = json.load(f)
             all_transactions = database.get("transactions", [])
     except FileNotFoundError:
         all_transactions = []
-    
-    # Get child accounts to verify the account id
-    child_accounts = await get_child_accounts()
-    account = next((acc for acc in child_accounts if acc.id == transaction.child_account_id), None)
-    
-    if not account and transaction.child_account_id is not None:
-        return {"error": f"Child account with ID {transaction.child_account_id} not found. Available accounts: {', '.join(f'{acc.owner} (ID: {acc.id})' for acc in child_accounts)}"}
-    
-    # Create consistent transaction record
+        
     transaction_dict = {
         "id": len(all_transactions) + 1,
-        "amount": transaction.amount,
-        "child_account_id": transaction.child_account_id,
-        "description": transaction.description
+        "amount": transaction_create.amount,
+        "child_account_id": transaction_create.child_account_id,
+        "description": transaction_create.description
     }
     
     all_transactions.append(transaction_dict)
@@ -64,11 +55,20 @@ async def create_transaction(transaction: Transaction):
     with open(SAVE_FILE, "w") as f:
         json.dump({"transactions": all_transactions}, f, indent=2)
     
-    account_info = f"(Account #{transaction.child_account_id})" if transaction.child_account_id else "(No account specified)"
-    owner_name = account.owner if account else "System"
-    
-    return {
-        "message": f"Transaction created for {owner_name} {account_info}",
-        "amount": transaction.amount,
-        "transaction_id": transaction_dict["id"]
-    }
+    return Transaction(
+        id=transaction_dict["id"],
+        amount=transaction_dict["amount"],
+        child_account_id=transaction_dict["child_account_id"],
+        description=transaction_dict["description"]
+    )
+
+@app.get("/child-account/total")
+async def get_child_account_total(child_account_id: int) -> float:
+    total = 0.0
+    with open(SAVE_FILE, "r") as f:
+        database = json.load(f)
+        all_transactions = database.get("transactions", [])
+        for transaction in all_transactions:
+            if transaction["child_account_id"] == child_account_id:
+                total += transaction["amount"]
+    return total
