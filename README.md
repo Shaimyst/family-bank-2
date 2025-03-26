@@ -26,6 +26,8 @@ poetry run uvicorn src.app:app --reload --log-level debug
 - [ ]   do input validation
 - [ ]   add error handling
 - [ ] Create a transaction model
+- [ ] Copy over the streamlit app from family bank
+- [ ] Get streamlit to use the backend instead of the local file
 
 ## Testing the app
 
