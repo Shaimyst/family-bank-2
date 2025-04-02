@@ -1,10 +1,17 @@
 # family-bank-2
+
 Building on app family-bank.
 
-## Running the app
+## Running the backend app
 
 ```bash
 poetry run uvicorn src.app:app --reload --log-level debug
+```
+
+## Running the streamlit app
+
+```bash
+poetry run streamlit run src/client.py
 ```
 
 ## Goals with this project
@@ -26,8 +33,7 @@ poetry run uvicorn src.app:app --reload --log-level debug
 - [ ]   do input validation
 - [ ]   add error handling
 - [ ] Create a transaction model
-- [ ] Copy over the streamlit app from family bank
-- [ ] Get streamlit to use the backend instead of the local file
+- [x] Get streamlit to use the backend instead of the local file
 
 ## Testing the app
 
