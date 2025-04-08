@@ -5,13 +5,13 @@ Building on app family-bank.
 ## Running the backend app
 
 ```bash
-poetry run uvicorn src.app:app --reload --log-level debug
+make run-server
 ```
 
 ## Running the streamlit app
 
 ```bash
-poetry run streamlit run src/client.py
+make run-client
 ```
 
 ## Goals with this project
