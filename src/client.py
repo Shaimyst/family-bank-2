@@ -43,29 +43,6 @@ class Transaction:
             "parent": self.parent
         }
 
-class ChildAccount:
-    def __init__(self, child: str):
-        self.child: str = child
-        self.transaction_history: list[Transaction] = []
-        
-    def get_balance(self) -> float:
-        return sum(transaction.amount for transaction in self.transaction_history)
-
-    def commit_transaction(self, transaction: Transaction) -> bool:
-        success: bool
-        if self.get_balance() + transaction.amount < 0:
-            success = False
-        else:
-            self.transaction_history.append(transaction)
-            success = True
-        return success
-
-
-# Instantiate child accounts
-child_accounts: list[ChildAccount] = []
-for child in child_accounts_data:
-    child_accounts.append(ChildAccount(child["owner"]))
-
 # Load transactions from save file
 with open("db.json", "r") as f:
     transactions: list[Transaction] = []
@@ -84,13 +61,9 @@ with open("db.json", "r") as f:
         print("No transactions found, will start with empty accounts")
     for transaction in transactions:
         if transaction.child == child_accounts_data[0]["owner"]:
-            success: bool = child_accounts[0].commit_transaction(transaction)
-            if not success:
-                st.error("Transaction failed to load, insufficient balance")
+            child_accounts_data[0].commit_transaction(transaction)
         elif transaction.child == child_accounts_data[1]["owner"]:
-            success: bool = child_accounts[1].commit_transaction(transaction)
-            if not success:
-                st.error("Transaction failed to load, insufficient balance")
+            child_accounts_data[1].commit_transaction(transaction)
         else:
             st.error("Invalid child name")
 
@@ -98,7 +71,6 @@ with open("db.json", "r") as f:
 # Transaction form (collects transaction inputs from user)
 st.header("Transaction")
 child_name = st.selectbox("Child: ", [child["owner"] for child in child_accounts_data])
-child = next((child for child in child_accounts if child.child == child_name), None)
 
 transaction_amount = st.number_input("Amount: ", step=1.0)
 transaction_description = st.text_input("Description: ")
@@ -128,8 +100,8 @@ def validate_inputs(
 if st.button("Commit transaction"):
     if validate_inputs(transaction_amount, parent_name, parent_password):
         # Try to commit transaction to child account object
-        success: bool = child.commit_transaction(
-            Transaction(child.child, transaction_amount, transaction_description, parent_name)
+        success: bool = child_accounts_data[0].commit_transaction(
+            Transaction(child_accounts_data[0]["owner"], transaction_amount, transaction_description, parent_name)
         )
         if success: 
                 st.success("Transaction successful")
@@ -139,10 +111,10 @@ if st.button("Commit transaction"):
         # Save transactions to save file
         with open("db.json", "w") as f:
             all_transactions: list[Transaction] = []
-            all_transactions.extend([t.to_dict() for t in child_accounts[0].transaction_history])
-            all_transactions.extend([t.to_dict() for t in child_accounts[1].transaction_history])
+            all_transactions.extend([t.to_dict() for t in child_accounts_data[0].transaction_history])
+            all_transactions.extend([t.to_dict() for t in child_accounts_data[1].transaction_history])
             json.dump({"transactions": all_transactions}, f, indent=2)
 
 # Display balances
-st.write(f"{child_accounts_data[0]['owner']}'s balance: ", child_accounts[0].get_balance())
-st.write(f"{child_accounts_data[1]['owner']}'s balance: ", child_accounts[1].get_balance())
+st.write(f"{child_accounts_data[0]['owner']}'s balance: ", child_accounts_data[0].get_balance())
+st.write(f"{child_accounts_data[1]['owner']}'s balance: ", child_accounts_data[1].get_balance())
