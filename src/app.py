@@ -12,17 +12,29 @@ SAVE_FILE: str = "db.json"
 
 @app.get("/parents")
 async def get_parents() -> list[Parent]:
-    return [
-        Parent(id=1, name="Harry"),
-        Parent(id=2, name="Jessica"),
-    ]
+    try:
+        with open(SAVE_FILE, "r") as f:
+            database: dict = json.load(f)
+            db_parents: list[dict] = database["parents"]
+            parents = []
+            for p in db_parents:
+                parents.append(Parent(**p))
+            return parents
+    except FileNotFoundError:
+        return []
 
 @app.get("/child-accounts")
 async def get_child_accounts() -> list[ChildAccount]:
-    return [
-        ChildAccount(owner="Willow", id=1),
-        ChildAccount(owner="Penny", id=2),
-    ]
+    try:
+        with open(SAVE_FILE, "r") as f:
+            database: dict = json.load(f)
+            db_child_accounts: list[dict] = database["child_accounts"]
+            child_accounts = []
+            for c in db_child_accounts:
+                child_accounts.append(ChildAccount(**c))
+            return child_accounts
+    except FileNotFoundError:
+        return []
 
 @app.get("/transactions")
 async def get_transactions() -> list[Transaction]:

@@ -14,6 +14,18 @@ make run-server
 make run-client
 ```
 
+## Running both the backend and the streamlit app
+
+```bash
+make run-all
+```
+
+## Stopping both the backend and the streamlit app
+
+```bash
+make stop-all
+```
+
 ## Goals with this project
 
 - [x] Add a new endpoint for creating a transaction

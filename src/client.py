@@ -108,7 +108,6 @@ if st.button("Commit transaction"):
         else:
             st.error("Transaction failed to commit, account would be overdrawn")
         # Save transactions to save file
-        # Save transactions to save file
         with open("db.json", "w") as f:
             all_transactions: list[Transaction] = []
             all_transactions.extend([t.to_dict() for t in child_accounts_data[0].transaction_history])
