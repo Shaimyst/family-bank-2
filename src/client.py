@@ -5,6 +5,8 @@ import requests
 
 st.title("Sadler Family Bank")
 
+# TODO: this file should only communicate to app.py
+
 base_url = "http://localhost:8000"  # TODO: Make this configurable?
 
 # Fetch data from backend

@@ -2,6 +2,8 @@ from fastapi import FastAPI
 import json
 from models import Transaction, Parent, ChildAccount, TransactionCreate
 
+# TODO: this file should only communicate to db.py
+
 app = FastAPI(
     docs_url="/docs",
     title="Family Bank 2",
