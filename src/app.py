@@ -56,16 +56,15 @@ async def create_transaction(transaction_create: TransactionCreate) -> Transacti
     try:
         with open(SAVE_FILE, "r") as f:
             database = json.load(f)
-            all_transactions = database.get("transactions", [])
     except FileNotFoundError:
-        all_transactions = []
+        database = {"transactions": [], "parents": [], "child_accounts": []}
 
     transaction_dict = transaction_create.model_dump()
-    transaction_dict["id"] = len(all_transactions) + 1
+    transaction_dict["id"] = len(database.get("transactions", [])) + 1
 
-    all_transactions.append(transaction_dict)
+    database["transactions"].append(transaction_dict)
     
     with open(SAVE_FILE, "w") as f:
-        json.dump({"transactions": all_transactions}, f, indent=2)
+        json.dump(database, f, indent=2)
     
     return Transaction(**transaction_dict)
