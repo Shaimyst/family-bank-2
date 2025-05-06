@@ -1,7 +1,8 @@
-import streamlit as st
 import json
 import hashlib
 import requests
+
+import streamlit as st
 
 
 class Parent:
@@ -50,14 +51,25 @@ base_url = "http://localhost:8000"  # TODO: Make this configurable?
 
 # Fetch data from backend
 parents_response = requests.get(f"{base_url}/parents")
-parents_data = parents_response.json()
-
+if parents_response.status_code != 200:
+    st.error(f"Failed to fetch parents: {parents_response.status_code} - {parents_response.text}")
+    parents_data = []
+else:
+    parents_data = parents_response.json()
 
 child_accounts_response = requests.get(f"{base_url}/child-accounts")
-child_accounts_data = child_accounts_response.json()
+if child_accounts_response.status_code != 200:
+    st.error(f"Failed to fetch child accounts: {child_accounts_response.status_code} - {child_accounts_response.text}")
+    child_accounts_data = []
+else:
+    child_accounts_data = child_accounts_response.json()
 
 transactions_response = requests.get(f"{base_url}/transactions")
-transactions_data = transactions_response.json()
+if transactions_response.status_code != 200:
+    st.error(f"Failed to fetch transactions: {transactions_response.status_code} - {transactions_response.text}")
+    transactions_data = []
+else:
+    transactions_data = transactions_response.json()
 
 # Display child account balances
 st.header("Account Balances")
@@ -81,8 +93,19 @@ with st.form("transaction_form", clear_on_submit=True):
             child_account_id=next((acc for acc in child_accounts_data if acc["owner"] == child_name), None)["id"],
             description=transaction_description
         )
-        requests.post(f"{base_url}/transactions", json=transaction_create.to_dict())
-        st.success("Transaction submitted successfully")
+        
+        try:
+            response = requests.post(f"{base_url}/transactions", json=transaction_create.to_dict())
+            if response.status_code == 200:
+                st.success("Transaction submitted successfully")
+                # Refresh the transactions data
+                transactions_response = requests.get(f"{base_url}/transactions")
+                if transactions_response.status_code == 200:
+                    transactions_data = transactions_response.json()
+            else:
+                st.error(f"Failed to submit transaction: {response.status_code} - {response.text}")
+        except Exception as e:
+            st.error(f"Error submitting transaction: {str(e)}")
 
 # tabs
 tab1, tab2 = st.tabs(["Recent Transactions", "Transaction History"])
@@ -102,11 +125,13 @@ with tab2:
     child_account = next((acc for acc in child_accounts_data if acc["owner"] == child_name), None)
     if child_account:
         st.write(f"Transactions for {child_account['owner']}:")
-        get_transactions_response = requests.get(f"{base_url}/transactions")
-        transactions_data = get_transactions_response.json()
-        for transaction in transactions_data:
-            if transaction["child_account_id"] == child_account["id"]:
-                st.write(f"{child_account['owner']}: ${transaction['amount']:.2f} - {transaction['description']}")
+        # Using the already fetched transactions data instead of making a new request
+        child_transactions = [t for t in transactions_data if t["child_account_id"] == child_account["id"]]
+        if child_transactions:
+            for transaction in child_transactions:
+                st.write(f"${transaction['amount']:.2f} - {transaction['description']}")
+        else:
+            st.write("No transactions found for this account.")
 
 
 # TODO:
