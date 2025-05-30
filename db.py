@@ -1,6 +1,6 @@
 import json
 
-from models import Transaction, Parent, ChildAccount
+from models import Transaction, Parent, ChildAccount, ParentCreate
 
 # this is the database api for the backend
 
@@ -16,30 +16,38 @@ def get_parent_by_name(name: str) -> Parent:
         parents_data = json.load(f)["parents"]
         return next((Parent(**parent) for parent in parents_data if parent["name"] == name), None)
 
-def create_parent(parent: Parent) -> Parent:
+def create_parent(parent_create: ParentCreate) -> Parent:
     """
     Create a new parent in the database.
     """
-    with open(SAVE_FILE, "r") as f:
-        db = json.load(f)
-        next_id = 1
+    try:
+        # Read the current database state
+        with open(SAVE_FILE, "r") as f:
+            db = json.load(f)
         
+        # Calculate next ID
+        next_id = 1
         if db["parents"]:
             next_id = max(p.get("id", 0) for p in db["parents"]) + 1
-        parent.id = next_id
 
-        parent = parent.create(
+        # Create new parent with hashed password
+        new_parent = Parent.create(
             id=next_id,
-            name=parent.name,
-            password=parent.password
+            name=parent_create.name,
+            password=parent_create.password
         )
 
-        db["parents"].append(parent.model_dump(by_alias=True))
+        # Add to database
+        db["parents"].append(new_parent.model_dump(by_alias=True))
 
+        # Write back to file
         with open(SAVE_FILE, "w") as f:
             json.dump(db, f, indent=2)
 
-        return parent
+        return new_parent
+    except Exception as e:
+        print(f"Error creating parent: {e}")
+        raise
     
 def verify_parent_password(name: str, password: str) -> bool:
     """
