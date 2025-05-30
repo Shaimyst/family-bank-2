@@ -4,6 +4,7 @@ from typing import List
 class Parent(BaseModel):
     id: int
     name: str
+    password: str
 
 class Transaction(BaseModel):
     id: int
