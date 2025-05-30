@@ -9,12 +9,12 @@ SAVE_FILE: str = "db.json"
 def get_parents() -> list[Parent]:
     with open(SAVE_FILE, "r") as f:
         parents_data = json.load(f)["parents"]
-        return [Parent(**parent) for parent in parents_data]
+        return [Parent.model_validate(parent) for parent in parents_data]
 
 def get_parent_by_name(name: str) -> Parent:
     with open(SAVE_FILE, "r") as f:
         parents_data = json.load(f)["parents"]
-        return next((Parent(**parent) for parent in parents_data if parent["name"] == name), None)
+        return next((Parent.model_validate(parent) for parent in parents_data if parent["name"] == name), None)
 
 def create_parent(parent_create: ParentCreate) -> Parent:
     """

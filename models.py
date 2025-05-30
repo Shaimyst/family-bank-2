@@ -17,7 +17,7 @@ class Parent(BaseModel):
     """
     id: int
     name: str
-    password_hash: str = Field(..., alias="password", dump_alias="password")
+    password_hash: str = Field(..., alias="password")
 
     def verify_password(self, password: str) -> bool:
         """
