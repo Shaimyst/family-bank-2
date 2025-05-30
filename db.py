@@ -11,6 +11,46 @@ def get_parents() -> list[Parent]:
         parents_data = json.load(f)["parents"]
         return [Parent(**parent) for parent in parents_data]
 
+def get_parent_by_name(name: str) -> Parent:
+    with open(SAVE_FILE, "r") as f:
+        parents_data = json.load(f)["parents"]
+        return next((Parent(**parent) for parent in parents_data if parent["name"] == name), None)
+
+def create_parent(parent: Parent) -> Parent:
+    """
+    Create a new parent in the database.
+    """
+    with open(SAVE_FILE, "r") as f:
+        db = json.load(f)
+        next_id = 1
+        
+        if db["parents"]:
+            next_id = max(p.get("id", 0) for p in db["parents"]) + 1
+        parent.id = next_id
+
+        parent = parent.create(
+            id=next_id,
+            name=parent.name,
+            password=parent.password
+        )
+
+        db["parents"].append(parent.model_dump(by_alias=True))
+
+        with open(SAVE_FILE, "w") as f:
+            json.dump(db, f, indent=2)
+
+        return parent
+    
+def verify_parent_password(name: str, password: str) -> bool:
+    """
+    Verify if the provided password matches the stored hash.
+    """
+    parent = get_parent_by_name(name)
+    if not parent:
+        return False
+    return parent.verify_password(password)
+    
+
 def get_child_accounts() -> list[ChildAccount]:
     with open(SAVE_FILE, "r") as f:
         child_accounts_data = json.load(f)["child_accounts"]

@@ -88,14 +88,27 @@ with st.form("transaction_form", clear_on_submit=True):
     
     submitted = st.form_submit_button("Submit Transaction")
     if submitted:
-        transaction_create = Transaction(
-            amount=transaction_amount,
-            child_account_id=next((acc for acc in child_accounts_data if acc["owner"] == child_name), None)["id"],
-            description=transaction_description
-        )
-        
         try:
-            response = requests.post(f"{base_url}/transactions", json=transaction_create.to_dict())
+            verify_response = requests.post(
+                f"{base_url}/parents/verify",
+                params={"name": parent_name, "password": parent_password}
+            )
+            if verify_response.status_code != 200:
+                st.error("Invalid password")
+                st.stop()
+
+            transaction_create = Transaction(
+                amount=transaction_amount,
+                child_account_id=next((acc for acc in child_accounts_data if acc["owner"] == child_name), None)["id"],
+                description=transaction_description
+            )
+
+            response = requests.post(
+                f"{base_url}/transactions",
+                json=transaction_create.to_dict(),
+                params={"parent_name": parent_name, "parent_password": parent_password}
+            )
+
             if response.status_code == 200:
                 st.success("Transaction submitted successfully")
                 # Refresh the transactions data
@@ -108,7 +121,7 @@ with st.form("transaction_form", clear_on_submit=True):
             st.error(f"Error submitting transaction: {str(e)}")
 
 # tabs
-tab1, tab2 = st.tabs(["Recent Transactions", "Transaction History"])
+tab1, tab2, tab3 = st.tabs(["Recent Transactions", "Transaction History", "Parent Management"])
 
 with tab1:
     # Display recent transactions
@@ -133,6 +146,41 @@ with tab2:
         else:
             st.write("No transactions found for this account.")
 
+with tab3:
+    st.header("Parent Management")
+    with st.form("parent_form", clear_on_submit=True):
+        st.subheader("Create Parent")
+        new_parent_name = st.text_input("Parent Name: ")
+        new_parent_password = st.text_input("Password: ", type="password")
+        confirm_password = st.text_input("Confirm Password: ", type="password")
+
+        submitted = st.form_submit_button("Add Parent")
+        if submitted:
+            if not new_parent_name or not new_parent_password or not confirm_password:
+                st.error("Please fill in all fields")
+            elif new_parent_password != confirm_password:
+                st.error("Passwords do not match")
+            else:
+                try:
+                    response = requests.post(
+                        f"{base_url}/parents", 
+                        json={"name": new_parent_name, "password": new_parent_password}
+                    )
+                    if response.status_code == 200:
+                        st.success("Parent created successfully")
+                        # Refresh the parents data
+                        parents_response = requests.get(f"{base_url}/parents")
+                        if parents_response.status_code == 200:
+                            parents_data = parents_response.json()
+                    else:
+                        st.error(f"Failed to create parent: {response.status_code} - {response.text}")
+                except Exception as e:
+                    st.error(f"Error creating parent: {str(e)}")
+
+    # Display existing parents
+    st.subheader("Existing Parents")
+    for parent in parents_data:
+        st.write(f"Name: {parent['name']}")
 
 # TODO:
 # - [X] Get streamlit to use the backend instead of the local file
@@ -142,7 +190,7 @@ with tab2:
 # - [X] Submitting transactions should clear the form
 # - [X] Fix parents and child accounts not being cleared when submitting a transaction
 # - [X] View transaction history for a child account
-# - [ ] Update references to password hashes to use the backend
+# - [X] Update references to password hashes to use the backend
 
 
 # # Constants
