@@ -95,7 +95,6 @@ with st.form("transaction_form", clear_on_submit=True):
             )
             if verify_response.status_code != 200:
                 st.error("Invalid password")
-                st.stop()
 
             transaction_create = Transaction(
                 amount=transaction_amount,

@@ -33,7 +33,7 @@ class Parent(BaseModel):
         return cls(
             id=id,
             name=name,
-            password_hash=hash_password(password)
+            password=hash_password(password)
         )
 
 class Transaction(BaseModel):
